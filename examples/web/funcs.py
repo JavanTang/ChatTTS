@@ -40,15 +40,17 @@ def on_voice_change(vocie_selection):
 
 def load_chat(cust_path: Optional[str], coef: Optional[str]) -> bool:
     if cust_path == None:
-        ret = chat.load_models(coef=coef, compile=sys.platform != 'win32')
+        ret = chat.load(coef=coef, compile=sys.platform != 'win32')
     else:
         logger.info('local model path: %s', cust_path)
-        ret = chat.load_models('custom', custom_path=cust_path, coef=coef, compile=sys.platform != 'win32')
+        ret = chat.load('custom', custom_path=cust_path, coef=coef, compile=sys.platform != 'win32')
         global custom_path
         custom_path = cust_path
     if ret:
         try:
             chat.normalizer.register("en", normalizer_en_nemo_text())
+        except ValueError as e:
+            logger.error(e)
         except:
             logger.warning('Package nemo_text_processing not found!')
             logger.warning(
@@ -56,6 +58,8 @@ def load_chat(cust_path: Optional[str], coef: Optional[str]) -> bool:
             )
         try:
             chat.normalizer.register("zh", normalizer_zh_tn())
+        except ValueError as e:
+            logger.error(e)
         except:
             logger.warning('Package WeTextProcessing not found!')
             logger.warning(
